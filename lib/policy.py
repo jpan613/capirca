@@ -402,6 +402,9 @@ class Term(object):
     self.flattened_addr = None
     self.flattened_saddr = None
     self.flattened_daddr = None
+    # fortigate
+    # borrowing source_interface and destination_interface from iptables
+    self.schedule = None
 
     # AddObject touches variables which might not have been initialized
     # further up so this has to be at the end.
@@ -758,6 +761,10 @@ class Term(object):
     if self.next_ip != other.next_ip:
       return False
 
+    # schedule
+    if self.schedule != other.schedule:
+      return False
+
     return True
 
   def __ne__(self, other):
@@ -1000,6 +1007,8 @@ class Term(object):
         self.dscp_set = obj.value
       elif obj.var_type is VarType.VPN:
         self.vpn = (obj.value[0], obj.value[1])
+      elif obj.var_type is VarType.SCHEDULE:
+        self.schedule = obj.value
       else:
         raise TermObjectTypeError(
             '%s isn\'t a type I know how to deal with' % (type(obj)))
@@ -1290,6 +1299,7 @@ class VarType(object):
   DTAG = 45
   NEXT_IP = 46
   HOP_LIMIT = 47
+  SCHEDULE = 48
 
   def __init__(self, var_type, value):
     self.var_type = var_type
@@ -1501,6 +1511,7 @@ tokens = (
     'TRAFFIC_TYPE',
     'VERBATIM',
     'VPN',
+    'SCHEDULE'
 )
 
 literals = r':{},-'
@@ -1558,6 +1569,7 @@ reserved = {
     'traffic-type': 'TRAFFIC_TYPE',
     'verbatim': 'VERBATIM',
     'vpn': 'VPN',
+    'schedule': 'SCHEDULE',
 }
 
 # disable linting warnings for lexx/yacc code
@@ -1709,6 +1721,7 @@ def p_term_spec(p):
                 | term_spec traffic_type_spec
                 | term_spec verbatim_spec
                 | term_spec vpn_spec
+                | term_spec schedule_spec
                 | """
   if len(p) > 1:
     if type(p[1]) == Term:
@@ -2047,6 +2060,10 @@ def p_strings_or_ints(p):
     else:
       p[0] = [p[1]]
 
+
+def p_schedule_spec(p):
+  """ schedule_spec : SCHEDULE ':' ':' STRING """
+  p[0] = VarType(VarType.SCHEDULE, p[4])
 
 def p_error(p):
   """."""
