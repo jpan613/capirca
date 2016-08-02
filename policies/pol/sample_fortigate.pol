@@ -1,6 +1,6 @@
 header {
-  comment:: "Outbound filter for the opus prod network"
-  target:: fortigate edge_acl vdom root inet conf
+  comment:: "Outbound filter for the opus prod network ipv6"
+  target:: fortigate edge_acl vdom root inet6 conf
 }
 term accept-dhcp {
   comment:: "Optional - allow forwarding of DHCP requests."
@@ -8,6 +8,16 @@ term accept-dhcp {
   source-interface:: port1
   destination-interface:: port2
   destination-port:: DHCP
+  protocol:: udp
+  action:: accept
+}
+
+term accept-to-honestdns {
+  source-interface:: port2
+  destination-interface:: port1
+  comment:: "Allow name resolution using honestdns."
+  destination-address:: GOOGLE_DNS
+  destination-port:: DNS
   protocol:: udp
   action:: accept
 }
