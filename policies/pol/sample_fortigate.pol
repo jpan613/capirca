@@ -1,0 +1,56 @@
+header {
+  comment:: "Outbound filter for the opus prod network ipv6"
+  target:: fortigate edge_acl vdom root inet6 conf
+}
+term accept-dhcp {
+  comment:: "Optional - allow forwarding of DHCP requests."
+  schedule:: mydhcpschedule
+  source-interface:: port1
+  destination-interface:: port2
+  destination-port:: DHCP
+  protocol:: udp
+  action:: accept
+}
+
+term accept-to-honestdns {
+  source-interface:: port2
+  destination-interface:: port1
+  comment:: "Allow name resolution using honestdns."
+  destination-address:: GOOGLE_DNS
+  destination-port:: DNS
+  protocol:: udp
+  action:: accept
+}
+
+term accept-tcp-replies {
+  comment:: "Allow tcp replies to internal hosts."
+  source-interface:: port1
+  destination-interface:: port2
+  destination-address:: INTERNAL
+  protocol:: tcp
+  option:: tcp-established
+  action:: accept
+}
+
+term deny-to-internal {
+  comment:: "Deny access to rfc1918/internal."
+  source-interface:: port1
+  destination-interface:: port2
+  destination-address:: INTERNAL
+  action:: deny
+}
+
+term deny-to-specific_hosts {
+  comment:: "Deny access to specified public."
+  source-interface:: port1
+  destination-interface:: port2
+  destination-address:: WEB_SERVERS MAIL_SERVERS
+  action:: deny
+}
+
+term default-permit {
+  comment:: "Allow what's left."
+  source-interface:: port1
+  destination-interface:: port2
+  action:: accept
+}
